@@ -33,75 +33,75 @@ model rol {
 }
 
 model ticket {
-  id_ticket                                   Int                @id @default(autoincrement())
-  descripcion                                 String             @db.Text
-  id_usuario                                  Int
-  id_tipo_soporte                             Int
-  id_tecnico_asignado                         Int?
-  id_estado_ticket                            Int
-  fecha_creacion                              DateTime           @default(now()) @db.DateTime(0)
-  fecha_cierre                                DateTime?          @db.DateTime(0)
-  solucion                                    String?            @db.Text
-  cantidad_horas_atencion                     Decimal?           @db.Decimal(5, 2)
-  estado_ticket                               estado_ticket      @relation(fields: [id_estado_ticket], references: [id_estado_ticket], map: "fk_ticket_estado")
-  usuario_ticket_id_tecnico_asignadoTousuario usuario?           @relation("ticket_id_tecnico_asignadoTousuario", fields: [id_tecnico_asignado], references: [id_usuario], map: "fk_ticket_tecnico")
-  tipo_soporte                                tipo_soporte       @relation(fields: [id_tipo_soporte], references: [id_tipo_soporte], map: "fk_ticket_tipo_soporte")
-  usuario_ticket_id_usuarioTousuario          usuario            @relation("ticket_id_usuarioTousuario", fields: [id_usuario], references: [id_usuario], map: "fk_ticket_usuario")
-  ticket_historial                            ticket_historial[]
+  id_ticket                                        Int                @id @default(autoincrement())
+  descripcion                                      String             @db.Text
+  alf_num_usuario                                  String             @db.VarChar(50)
+  id_tipo_soporte                                  Int
+  alf_num_tecnico_asignado                         String?            @db.VarChar(50)
+  id_estado_ticket                                 Int
+  fecha_creacion                                   DateTime?          @db.DateTime(0)
+  fecha_cierre                                     DateTime?          @db.DateTime(0)
+  solucion                                         String?            @db.Text
+  cantidad_horas_atencion                          Decimal?           @db.Decimal(5, 2)
+  codigo_consulta                                  String             @db.VarChar(255)
+  estado_ticket                                    estado_ticket      @relation(fields: [id_estado_ticket], references: [id_estado_ticket], map: "fk_ticket_estado")
+  usuario_ticket_alf_num_tecnico_asignadoTousuario usuario?           @relation("ticket_alf_num_tecnico_asignadoTousuario", fields: [alf_num_tecnico_asignado], references: [alf_num], map: "fk_ticket_tecnico")
+  tipo_soporte                                     tipo_soporte       @relation(fields: [id_tipo_soporte], references: [id_tipo_soporte], map: "fk_ticket_tipo_soporte")
+  usuario_ticket_alf_num_usuarioTousuario          usuario            @relation("ticket_alf_num_usuarioTousuario", fields: [alf_num_usuario], references: [alf_num], map: "fk_ticket_usuario")
+  ticket_historial                                 ticket_historial[]
 
   @@index([id_estado_ticket], map: "fk_ticket_estado_idx")
-  @@index([id_tecnico_asignado], map: "fk_ticket_tecnico_idx")
+  @@index([alf_num_tecnico_asignado], map: "fk_ticket_tecnico_idx")
   @@index([id_tipo_soporte], map: "fk_ticket_tipo_soporte_idx")
-  @@index([id_usuario], map: "fk_ticket_usuario_idx")
+  @@index([alf_num_usuario], map: "fk_ticket_usuario_idx")
 }
 
 model ticket_historial {
   id_historial                                                     Int            @id @default(autoincrement())
   id_ticket                                                        Int
-  id_usuario_accion                                                Int
+  alf_num_usuario_accion                                           String         @db.VarChar(50)
   id_estado_anterior                                               Int?
   id_estado_nuevo                                                  Int
-  id_tecnico_anterior                                              Int?
-  id_tecnico_nuevo                                                 Int?
+  alf_num_tecnico_anterior                                         String?        @db.VarChar(50)
+  alf_num_tecnico_nuevo                                            String?        @db.VarChar(50)
   fecha_cambio                                                     DateTime       @default(now()) @db.DateTime(0)
   comentario                                                       String?        @db.Text
   estado_ticket_ticket_historial_id_estado_anteriorToestado_ticket estado_ticket? @relation("ticket_historial_id_estado_anteriorToestado_ticket", fields: [id_estado_anterior], references: [id_estado_ticket], map: "fk_historial_estado_anterior")
   estado_ticket_ticket_historial_id_estado_nuevoToestado_ticket    estado_ticket  @relation("ticket_historial_id_estado_nuevoToestado_ticket", fields: [id_estado_nuevo], references: [id_estado_ticket], map: "fk_historial_estado_nuevo")
   ticket                                                           ticket         @relation(fields: [id_ticket], references: [id_ticket], onDelete: Cascade, map: "fk_historial_ticket")
-  usuario                                                          usuario        @relation(fields: [id_usuario_accion], references: [id_usuario], map: "fk_historial_usuario")
+  usuario                                                          usuario        @relation(fields: [alf_num_usuario_accion], references: [alf_num], map: "fk_historial_usuario")
 
   @@index([id_estado_anterior], map: "fk_historial_estado_anterior_idx")
   @@index([id_estado_nuevo], map: "fk_historial_estado_nuevo_idx")
   @@index([id_ticket], map: "fk_historial_ticket_idx")
-  @@index([id_usuario_accion], map: "fk_historial_usuario_idx")
+  @@index([alf_num_usuario_accion], map: "fk_historial_usuario_idx")
 }
 
 model tipo_soporte {
   id_tipo_soporte Int      @id @default(autoincrement())
-  tipo_soporte    String   @db.VarChar(45)
-  descripcion     String?  @db.VarChar(100)
+  tipo_soporte    String   @db.VarChar(255)
+  descripcion     String?  @db.VarChar(255)
   activo          Boolean  @default(true)
   ticket          ticket[]
 }
 
 model usuario {
-  id_usuario                                 Int                @id @default(autoincrement())
-  nombres                                    String             @db.VarChar(45)
-  apellidos                                  String?            @db.VarChar(45)
-  email                                      String             @unique(map: "email") @db.VarChar(100)
-  password                                   String             @db.VarChar(255)
-  dni                                        String?            @db.VarChar(15)
-  celular                                    String?            @db.VarChar(20)
-  id_area                                    Int?
-  id_rol                                     Int
-  activo                                     Boolean            @default(true)
-  fecha_creacion                             DateTime           @default(now()) @db.DateTime(0)
-  ultimo_login                               DateTime?          @db.DateTime(0)
-  ticket_ticket_id_tecnico_asignadoTousuario ticket[]           @relation("ticket_id_tecnico_asignadoTousuario")
-  ticket_ticket_id_usuarioTousuario          ticket[]           @relation("ticket_id_usuarioTousuario")
-  ticket_historial                           ticket_historial[]
-  area                                       area?              @relation(fields: [id_area], references: [id_area], map: "fk_usuario_area")
-  rol                                        rol                @relation(fields: [id_rol], references: [id_rol], map: "fk_usuario_rol")
+  alf_num                                         String             @id @db.VarChar(50)
+  nombres                                         String             @db.VarChar(45)
+  apellidos                                       String?            @db.VarChar(45)
+  email                                           String             @unique(map: "email") @db.VarChar(100)
+  dni                                             String?            @db.VarChar(15)
+  celular                                         String?            @db.VarChar(20)
+  id_area                                         Int?
+  id_rol                                          Int
+  activo                                          Boolean            @default(true)
+  fecha_creacion                                  DateTime           @default(now()) @db.DateTime(0)
+  ultimo_login                                    DateTime?          @db.DateTime(0)
+  ticket_ticket_alf_num_tecnico_asignadoTousuario ticket[]           @relation("ticket_alf_num_tecnico_asignadoTousuario")
+  ticket_ticket_alf_num_usuarioTousuario          ticket[]           @relation("ticket_alf_num_usuarioTousuario")
+  ticket_historial                                ticket_historial[]
+  area                                            area?              @relation(fields: [id_area], references: [id_area], map: "fk_usuario_area")
+  rol                                             rol                @relation(fields: [id_rol], references: [id_rol], map: "fk_usuario_rol")
 
   @@index([id_area], map: "fk_usuario_area_idx")
   @@index([id_rol], map: "fk_usuario_rol_idx")

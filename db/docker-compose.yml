@@ -1,0 +1,17 @@
+services:
+  db:
+    image: mysql:8.0-debian
+    container_name: db_container_name
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: test_chroma
+      MYSQL_USER: nestuser
+      MYSQL_PASSWORD: nestpassword
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true
