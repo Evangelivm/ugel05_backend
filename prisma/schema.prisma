@@ -36,6 +36,7 @@ model ticket {
   id_ticket                                        Int                @id @default(autoincrement())
   descripcion                                      String             @db.Text
   alf_num_usuario                                  String             @db.VarChar(50)
+  codigo_consulta                                  String             @db.VarChar(255)
   id_tipo_soporte                                  Int
   alf_num_tecnico_asignado                         String?            @db.VarChar(50)
   id_estado_ticket                                 Int
@@ -43,7 +44,6 @@ model ticket {
   fecha_cierre                                     DateTime?          @db.DateTime(0)
   solucion                                         String?            @db.Text
   cantidad_horas_atencion                          Decimal?           @db.Decimal(5, 2)
-  codigo_consulta                                  String             @db.VarChar(255)
   estado_ticket                                    estado_ticket      @relation(fields: [id_estado_ticket], references: [id_estado_ticket], map: "fk_ticket_estado")
   usuario_ticket_alf_num_tecnico_asignadoTousuario usuario?           @relation("ticket_alf_num_tecnico_asignadoTousuario", fields: [alf_num_tecnico_asignado], references: [alf_num], map: "fk_ticket_tecnico")
   tipo_soporte                                     tipo_soporte       @relation(fields: [id_tipo_soporte], references: [id_tipo_soporte], map: "fk_ticket_tipo_soporte")

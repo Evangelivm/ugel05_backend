@@ -15,7 +15,7 @@ export const createUserSchema = z.object({
   email: z.string().email('Debe ser un correo electrónico válido'),
   dni: z
     .string()
-    .length(9, 'El DNI debe tener exactamente 9 caracteres')
+    .length(8, 'El DNI debe tener exactamente 8 caracteres')
     .optional(),
   celular: z
     .string()
