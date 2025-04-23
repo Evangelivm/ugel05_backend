@@ -8,17 +8,22 @@ export class TicketService {
 
   async getTickets() {
     return this.prisma.$queryRaw`
-      SELECT 
+     SELECT 
         a.id_ticket,
         a.codigo_consulta as "id", 
+        concat(d.nombres," ",d.apellidos) as "user" ,
+        d.id_area,
         b.tipo_soporte as "type",
         a.descripcion as "description", 
         a.id_estado_ticket as "status",
-        a.fecha_creacion as "fecha",
+        a.fecha_creacion as "fecha_creacion",
+        a.fecha_cierre as "fecha_cierre",
+        a.cantidad_horas_atencion as "cantidad_horas_atencion",
         concat(c.nombres," ",c.apellidos) as "technician" 
       FROM ticket a 
       JOIN tipo_soporte b ON b.id_tipo_soporte = a.id_tipo_soporte
       LEFT JOIN usuario c ON a.alf_num_tecnico_asignado = c.alf_num
+      JOIN usuario d ON a.alf_num_usuario = d.alf_num
     `;
   }
 
@@ -182,5 +187,24 @@ export class TicketService {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+  }
+  async closeTicket(id_ticket: number, fecha_cierre: string) {
+    const result = await this.prisma.$executeRaw`
+    UPDATE ticket 
+    SET 
+      id_estado_ticket = 4,
+      fecha_cierre = ${fecha_cierre}
+    WHERE id_ticket = ${id_ticket}
+  `;
+
+    if (result === 0) {
+      throw new NotFoundException(`No se encontró ticket con ID ${id_ticket}`);
+    }
+    //console.log(fecha_cierre);
+    return {
+      message: `Ticket ${id_ticket} cerrado correctamente`,
+      affectedRows: result,
+      fecha_cierre: fecha_cierre,
+    };
   }
 }

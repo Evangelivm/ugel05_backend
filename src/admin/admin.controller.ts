@@ -17,6 +17,7 @@ import {
   AssignTechnicianDto,
 } from './dto/assign-technician.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CloseTicketDto, CloseTicketDtoSchema } from './dto/close-ticket.dto';
 
 @Controller('admin')
 @UseGuards(ThrottlerGuard)
@@ -33,6 +34,16 @@ export class AdminController {
     return this.adminService.getTickets();
   }
 
+  @Get('metrics')
+  async getAdminMetrics() {
+    return this.adminService.getAdminTicketsMetrics();
+  }
+
+  @Get('technicians')
+  async getTechniciansWithTicketCount() {
+    return this.adminService.getTechniciansWithTicketCount();
+  }
+
   @Delete('ticket/:codigoConsulta')
   async deleteTicket(@Param('codigoConsulta') codigoConsulta: string) {
     try {
@@ -46,6 +57,7 @@ export class AdminController {
       throw error;
     }
   }
+
   @Patch('tickets/assign-technician')
   async assignTechnician(@Body() body: unknown) {
     // Validar el body con Zod
@@ -65,5 +77,26 @@ export class AdminController {
 
     // Si la validación pasa, llamar al servicio
     return this.adminService.assignTechnicianToTicket(result.data);
+  }
+
+  @Patch('close')
+  async closeTicket(@Body() body: unknown) {
+    // Validar el body con Zod
+    const result = CloseTicketDtoSchema.safeParse(body);
+
+    if (!result.success) {
+      // Extraer y formatear errores de Zod
+      const errors = result.error.errors.map((err) => ({
+        field: err.path.join('.'),
+        message: err.message,
+      }));
+      throw new BadRequestException({
+        message: 'Datos inválidos',
+        errors,
+      });
+    }
+
+    // Si la validación pasa, llamar al servicio
+    return this.adminService.closeTicket(result.data);
   }
 }

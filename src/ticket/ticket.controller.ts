@@ -18,11 +18,6 @@ import { ticketRequestSchema } from './dto/ticket-request.dto';
 export class TicketController {
   constructor(private readonly ticketService: TicketService) {}
 
-  @Get('all')
-  async getTickets() {
-    return this.ticketService.getTickets();
-  }
-
   @Get('user/:userId')
   async getUserTickets(@Param('userId') userId: string) {
     return this.ticketService.getUserTickets(userId);
