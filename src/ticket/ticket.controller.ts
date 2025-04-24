@@ -22,6 +22,10 @@ export class TicketController {
   async getUserTickets(@Param('userId') userId: string) {
     return this.ticketService.getUserTickets(userId);
   }
+  @Get('technician/:technicianId')
+  async getTechnicianTickets(@Param('technicianId') technicianId: string) {
+    return this.ticketService.getTechnicianTickets(technicianId);
+  }
 
   @Post('support-request')
   async createSupportRequest(@Body() body: any) {
@@ -51,5 +55,9 @@ export class TicketController {
   @Get('metrics/:userId')
   async getTicketsMetrics(@Param('userId') userId: string) {
     return this.ticketService.getTicketsMetrics(userId);
+  }
+  @Get('techmetrics/:technicianId')
+  async getTechnicianMetrics(@Param('technicianId') technicianId: string) {
+    return this.ticketService.getTicketsTechnicianMetrics(technicianId);
   }
 }

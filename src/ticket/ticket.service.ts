@@ -207,4 +207,115 @@ export class TicketService {
       fecha_cierre: fecha_cierre,
     };
   }
+
+  async getTechnicianTickets(alfNumTecnico: string) {
+    return this.prisma.$queryRaw`
+      SELECT 
+        a.id_ticket,
+        a.codigo_consulta as "id", 
+        CONCAT(c.nombres, " ", c.apellidos) AS "user",
+        b.tipo_soporte as "type",
+        a.descripcion as "description", 
+        a.id_estado_ticket as "status",
+        a.fecha_creacion as "fecha_creacion",
+        a.fecha_cierre as "fecha_cierre",
+        c.celular as "celular",
+        a.cantidad_horas_atencion as "cantidad_horas_atencion"
+      FROM ticket a 
+      JOIN tipo_soporte b ON b.id_tipo_soporte = a.id_tipo_soporte
+      JOIN usuario c ON a.alf_num_usuario = c.alf_num
+      WHERE a.alf_num_tecnico_asignado = ${alfNumTecnico}
+    `;
+  }
+  async getTicketsTechnicianMetrics(alfNumTecnicoAsignado: string) {
+    try {
+      // Obtener el mes actual y el anterior
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+
+      const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+      // Función auxiliar para obtener métricas
+      const getMetrics = async (month: number, year: number) => {
+        return await this.prisma.$queryRaw<
+          {
+            id_estado_ticket: number;
+            cantidad_horas_atencion: number;
+          }[]
+        >`
+            SELECT 
+                id_estado_ticket, 
+                cantidad_horas_atencion 
+            FROM ticket
+            WHERE id_estado_ticket IN (1, 2, 3, 4)
+            AND alf_num_tecnico_asignado = ${alfNumTecnicoAsignado}
+            AND MONTH(fecha_creacion) = ${month}
+            AND YEAR(fecha_creacion) = ${year}
+            `;
+      };
+
+      // Obtener métricas del mes actual y anterior
+      const [currentMonthMetrics, previousMonthMetrics] = await Promise.all([
+        getMetrics(currentMonth, currentYear),
+        getMetrics(previousMonth, previousYear),
+      ]);
+
+      // Calcular métricas del mes actual
+      const currentTicketsResueltos = currentMonthMetrics.filter(
+        (t) => t.id_estado_ticket === 4,
+      );
+      const currentAvgTime =
+        currentTicketsResueltos.length > 0
+          ? currentTicketsResueltos.reduce(
+              (sum, t) => sum + (t.cantidad_horas_atencion || 0),
+              0,
+            ) / currentTicketsResueltos.length
+          : 0;
+
+      // Calcular métricas del mes anterior
+      const previousTicketsResueltos = previousMonthMetrics.filter(
+        (t) => t.id_estado_ticket === 4,
+      );
+      const previousAvgTime =
+        previousTicketsResueltos.length > 0
+          ? previousTicketsResueltos.reduce(
+              (sum, t) => sum + (t.cantidad_horas_atencion || 0),
+              0,
+            ) / previousTicketsResueltos.length
+          : 0;
+
+      // Calcular diferencia porcentual
+      const timeDifference = currentAvgTime - previousAvgTime;
+      const percentageDifference =
+        previousAvgTime !== 0 ? (timeDifference / previousAvgTime) * 100 : 0;
+
+      return {
+        ticketsByStatus: {
+          abiertos: currentMonthMetrics.filter((t) => t.id_estado_ticket === 1)
+            .length,
+          enProceso: currentMonthMetrics.filter((t) => t.id_estado_ticket === 2)
+            .length,
+          pendientes: currentMonthMetrics.filter(
+            (t) => t.id_estado_ticket === 3,
+          ).length,
+          resueltos: currentTicketsResueltos.length,
+        },
+        tiempoPromedio: {
+          current: parseFloat(currentAvgTime.toFixed(1)),
+          difference: parseFloat(timeDifference.toFixed(1)),
+          percentage: parseFloat(percentageDifference.toFixed(1)),
+          isImprovement: timeDifference < 0,
+        },
+        totals: {
+          currentMonth: currentMonthMetrics.length,
+          previousMonth: previousMonthMetrics.length,
+        },
+      };
+    } catch (error) {
+      console.error('Error al obtener métricas de tickets:', error);
+      throw new Error('No se pudieron obtener las métricas de tickets');
+    }
+  }
 }
