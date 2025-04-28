@@ -9,7 +9,7 @@ services:
     devices:
       - '/dev/ttyS3:/dev/ttyS3' # Maps COM3 to container
     environment:
-      DATABASE_URL: mysql://root:ugelpassword@db_container_name:3306/mesa_ayuda
+      DATABASE_URL: mysql://root:ugelpassword@db_ugel_05:3306/mesa_ayuda
     networks:
       - shared_network
     privileged: true # May be needed for serial port access
