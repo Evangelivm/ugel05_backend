@@ -5,10 +5,10 @@ services:
     ports:
       - '3306:3306'
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: test_chroma
+      MYSQL_ROOT_PASSWORD: ugelpassword
+      MYSQL_DATABASE: ugel_05
       MYSQL_USER: nestuser
-      MYSQL_PASSWORD: nestpassword
+      MYSQL_PASSWORD: ugelpassword
     networks:
       - shared_network
 
