@@ -6,7 +6,7 @@ services:
       - '3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ugelpassword
-      MYSQL_DATABASE: ugel_05
+      MYSQL_DATABASE: mesa_ayuda
       MYSQL_USER: nestuser
       MYSQL_PASSWORD: ugelpassword
     networks:
